@@ -1,8 +1,0 @@
-package com.microservice.rating.service.external;
-
-import org.springframework.cloud.openfeign.FeignClient;
-
-@FeignClient("HOTELSERVICE")
-public interface HotelServiceExternal {
-
-}
