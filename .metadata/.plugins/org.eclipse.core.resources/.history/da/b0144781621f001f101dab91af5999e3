@@ -1,0 +1,6 @@
+spring.application.name=ServiceRegistry
+
+eureka.instance.hostname=localhost
+
+# ekhon boltechi je ei Spring Boot project ta Eureka Client NA!
+

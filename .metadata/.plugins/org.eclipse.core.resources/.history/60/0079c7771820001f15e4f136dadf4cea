@@ -1,0 +1,5 @@
+package com.microservice.learn.service.external;
+
+public class RatingServiceExternal {
+
+}

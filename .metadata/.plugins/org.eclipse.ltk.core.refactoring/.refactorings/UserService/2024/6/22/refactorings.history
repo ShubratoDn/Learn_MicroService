@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;Hotel.java&apos; to &apos;RatingService/src/main/java/com.microservice.rating.payload&apos;&#x0D;&#x0A;- Original project: &apos;UserService&apos;&#x0D;&#x0A;- Destination element: &apos;RatingService/src/main/java/com.microservice.rating.payload&apos;&#x0D;&#x0A;- Original element: &apos;com.microservice.learn.payloads.Hotel.java&apos;" description="Copy compilation unit" destination="=RatingService/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.microservice.rating.payload" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.microservice.learn.payloads{Hotel.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1717253075099" units="1" version="1.0"/>
+</session>
