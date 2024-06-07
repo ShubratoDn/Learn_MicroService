@@ -1,3 +1,0 @@
-spring.application.name=ServiceRegistry
-
-eureka.instance.hostname=localhost
