@@ -10,6 +10,8 @@ import com.microservice.learn.exceptions.ResourceNotFoundException;
 import com.microservice.learn.payloads.Rating;
 import com.microservice.learn.repository.UserRepository;
 import com.microservice.learn.service.external.RatingServiceExternal;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 
 @Service
 public class UserServiceImple implements UserService {
@@ -26,14 +28,21 @@ public class UserServiceImple implements UserService {
 	}
 
 	@Override
+	@CircuitBreaker(name = "ratingServiceCB", fallbackMethod = "getUserByIdFallback")
+	@Retry(name = "ratingServiceRetry", fallbackMethod = "getUserByIdFallback")
 	public User getUserById(Long id) {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
 
 		List<Rating> ratings = ratingServiceExternal.getRatingByUserId(user.getId());
-
 		user.setRatings(ratings);
+		return user;
+	}
 
+	public User getUserByIdFallback(Long id, Throwable t) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
+		user.setRatings(List.of());
 		return user;
 	}
 
@@ -43,13 +52,23 @@ public class UserServiceImple implements UserService {
 	}
 
 	@Override
+	@CircuitBreaker(name = "ratingServiceCB", fallbackMethod = "getAllUserFallback")
+	@Retry(name = "ratingServiceRetry", fallbackMethod = "getAllUserFallback")
 	public List<User> getAllUser() {
-		 List<User> findAll = userRepository.findAll();
-		for(User user: findAll) {
+		List<User> findAll = userRepository.findAll();
+		for (User user : findAll) {
 			List<Rating> ratings = ratingServiceExternal.getRatingByUserId(user.getId());
 			user.setRatings(ratings);
 		}
-		 return findAll;
+		return findAll;
+	}
+
+	public List<User> getAllUserFallback(Throwable t) {
+		List<User> findAll = userRepository.findAll();
+		for (User user : findAll) {
+			user.setRatings(List.of());
+		}
+		return findAll;
 	}
 
 	@Override

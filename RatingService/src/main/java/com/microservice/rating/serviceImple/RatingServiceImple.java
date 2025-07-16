@@ -9,6 +9,9 @@ import com.microservice.rating.entities.Rating;
 import com.microservice.rating.repository.RatingRepository;
 import com.microservice.rating.service.RatingService;
 import com.microservice.rating.service.external.HotelServiceExternal;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import com.microservice.rating.payload.Hotel;
 
 @Service
 public class RatingServiceImple implements RatingService {
@@ -40,6 +43,8 @@ public class RatingServiceImple implements RatingService {
     }
     
     @Override
+    @CircuitBreaker(name = "hotelServiceCB", fallbackMethod = "getRatingByUserIdFallback")
+    @Retry(name = "hotelServiceRetry", fallbackMethod = "getRatingByUserIdFallback")
     public List<Rating> getRatingByUserId(Long userId) {
     	List<Rating> findByUserId = ratingRepository.findByUserId(userId);
     	
@@ -47,6 +52,14 @@ public class RatingServiceImple implements RatingService {
     		rating.setHotel(hotelServiceExternal.getHotelById(rating.getHotelId()));
     	}
     	return findByUserId;
+    }
+
+    public List<Rating> getRatingByUserIdFallback(Long userId, Throwable t) {
+        List<Rating> findByUserId = ratingRepository.findByUserId(userId);
+        for (Rating rating : findByUserId) {
+            rating.setHotel(new Hotel(0L, "Unavailable", "N/A", "Fallback hotel info"));
+        }
+        return findByUserId;
     }
     
     @Override
