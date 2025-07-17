@@ -34,12 +34,15 @@ public class UserServiceImple implements UserService {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
 
+		System.out.println("\n\nI'm going to save user \n");
+
 		List<Rating> ratings = ratingServiceExternal.getRatingByUserId(user.getId());
 		user.setRatings(ratings);
 		return user;
 	}
 
 	public User getUserByIdFallback(Long id, Throwable t) {
+		System.out.println("\n\nFALLEN BACK  \n");
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
 		user.setRatings(List.of());

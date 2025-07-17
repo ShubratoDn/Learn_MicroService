@@ -33,7 +33,7 @@ public class UserController {
     	User userByEmail = userService.getUserByEmail(user.getEmail());
     	
     	if(userByEmail != null) {
-    		return new ResponseEntity<>(new ApiResponse("User with the email '"+user.getEmail()+"' already exists!",HttpStatus.BAD_GATEWAY), HttpStatus.BAD_GATEWAY);
+    		return new ResponseEntity<>(new ApiResponse("User with the email '"+user.getEmail()+"' already exists!",HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
     	}
     	
         User newUser = userService.saveUser(user);
