@@ -11,7 +11,29 @@ server:
 spring:
   application:
     name: ApiGateway
- 
+  spring:
+    spring:
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: https://integrator-6756914.okta.com
+#    security:
+#      oauth2:
+#        client:
+#          registration:
+#            okta:
+#              client-id: 0oatj3ejwd06MqNiT697
+#              client-secret: DhfsQBOAcFBe7efaB2xdbGx8E8NIi7raakcw_REkM_7zXvHvLsnK5CkwQsNckofb
+#              scope: openid,profile
+#          provider:
+#            okta:
+#              issuer-uri: https://integrator-6756914.okta.com
+#              authorization-uri: https://your-subdomain.oktapreview.com/oauth2/v1/authorize
+#              token-uri: https://your-subdomain.oktapreview.com/oauth2/v1/token
+#              user-info-uri: https://your-subdomain.oktapreview.com/oauth2/v1/userinfo
+#              user-name-attribute: sub
+#              jwk-set-uri: https://your-subdomain.oktapreview.com/oauth2/v1/keys
   cloud:
     gateway:
       routes:

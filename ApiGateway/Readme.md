@@ -1,0 +1,1 @@
+https://integrator-6756914.okta.com/.well-known/openid-configuration
