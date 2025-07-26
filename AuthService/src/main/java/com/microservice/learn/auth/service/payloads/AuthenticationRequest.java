@@ -1,13 +1,11 @@
 package com.microservice.learn.auth.service.payloads;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginResponse {
-
-	private String token;
-	
+public class AuthenticationRequest {
+	private String username;
+	private String password;
 }

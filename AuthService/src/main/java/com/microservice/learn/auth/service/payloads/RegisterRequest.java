@@ -1,4 +1,4 @@
-package com.microservice.learn.auth.service.entities;
+package com.microservice.learn.auth.service.payloads;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,16 +8,13 @@ import lombok.*;
 
 import java.util.Date;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class RegisterRequest {
 
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String username;
@@ -32,6 +29,26 @@ public class User {
     private Date createdAt;
     private Date updatedAt;
 
+    @JsonProperty
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    @JsonIgnore
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @JsonProperty
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    @JsonIgnore
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @JsonIgnore
     public String getPassword() {
         return password;
@@ -41,8 +58,4 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
-//    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    private List<UserRole> roles = new ArrayList<>();
-    
 }
