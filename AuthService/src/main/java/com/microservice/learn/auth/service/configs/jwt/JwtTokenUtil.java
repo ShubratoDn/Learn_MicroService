@@ -48,6 +48,19 @@ public class JwtTokenUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        
+        // Add user information to claims if it's a CustomUserDetails
+        if (userDetails instanceof com.microservice.learn.auth.service.configs.security.CustomUserDetails) {
+            com.microservice.learn.auth.service.configs.security.CustomUserDetails customUserDetails = 
+                (com.microservice.learn.auth.service.configs.security.CustomUserDetails) userDetails;
+            com.microservice.learn.auth.service.entities.User user = customUserDetails.getLoggedInUser();
+            
+            claims.put("email", user.getEmail());
+            claims.put("role", user.getRole());
+            claims.put("designation", user.getDesignation());
+            claims.put("name", user.getName());
+        }
+        
         return createToken(claims, userDetails.getUsername());
     }
 

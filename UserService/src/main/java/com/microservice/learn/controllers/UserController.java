@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microservice.learn.entities.User;
 import com.microservice.learn.exceptions.ResourceNotFoundException;
 import com.microservice.learn.payloads.ApiResponse;
+import com.microservice.learn.payloads.UserInfo;
 import com.microservice.learn.service.UserService;
 
 @RestController
@@ -83,6 +85,40 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             throw new ResourceNotFoundException("User not found with id : " + id);
+        }
+    }
+
+    // Get current logged-in user information
+    @GetMapping("/me")
+    public ResponseEntity<UserInfo> getCurrentUserInfo(
+            @RequestHeader(value = "X-User-Username", required = false) String username,
+            @RequestHeader(value = "X-User-Email", required = false) String email,
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestHeader(value = "X-User-Designation", required = false) String designation,
+            @RequestHeader(value = "X-User-Name", required = false) String name) {
+        
+        if (username == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
+        UserInfo userInfo = new UserInfo(username, email, role, designation, name);
+        return new ResponseEntity<>(userInfo, HttpStatus.OK);
+    }
+
+    // Get current logged-in user's full profile
+    @GetMapping("/profile")
+    public ResponseEntity<User> getCurrentUserProfile(
+            @RequestHeader(value = "X-User-Email", required = false) String email) {
+        
+        if (email == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
+        User user = userService.getUserByEmail(email);
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } else {
+            throw new ResourceNotFoundException("User profile not found for email: " + email);
         }
     }
 }
