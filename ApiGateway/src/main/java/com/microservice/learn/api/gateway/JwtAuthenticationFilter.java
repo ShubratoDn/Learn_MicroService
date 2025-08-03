@@ -1,10 +1,5 @@
 package com.microservice.learn.api.gateway;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.microservice.learn.api.gateway.payloads.ErrorResponse;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -19,11 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Function;
 
 @Component
 @Slf4j
@@ -49,8 +42,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-//            return exchange.getResponse().setComplete();
             return unauthorizedResponse(exchange, "Missing Authorization header");
         }
 
@@ -58,47 +49,20 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         try {
             if (validateToken(token)) {
-                Claims claims = extractClaims(token);
-                String username = claims.getSubject();
-
-                // Add user information to request headers
-                ServerHttpRequest modifiedRequest = request.mutate()
-                        .header("X-User-Username", username)
-                        .header("X-User-Email", claims.get("email", String.class))
-                        .header("X-User-Role", claims.get("role", String.class))
-                        .header("X-User-Designation", claims.get("designation", String.class))
-                        .build();
-
-                return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                // Token is valid, forward the request without modification
+                return chain.filter(exchange);
             } else {
-//                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-//                return exchange.getResponse().setComplete();
-                return unauthorizedResponse(exchange, "Invalid Authorization header");
+                return unauthorizedResponse(exchange, "Invalid token");
             }
         } catch (Exception e) {
-//            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-//            return exchange.getResponse().setComplete();
-            e.printStackTrace();
-            return unauthorizedResponse(exchange, "Missing or invalid Authorization header");
+            log.error("Error processing authentication: {}", e.getMessage());
+            return unauthorizedResponse(exchange, "Invalid Authorization header");
         }
     }
 
     private boolean isExcludedPath(String path) {
         return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
     }
-
-//    private boolean validateToken(String token) {
-//        try {
-//            SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-//            Jwts.parserBuilder()
-//                    .setSigningKey(key)
-//                    .build()
-//                    .parseClaimsJws(token);
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
 
     public boolean validateToken(String authToken) {
         try {
@@ -117,41 +81,24 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return false;
     }
 
-    private Claims extractClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-    }
-
     @Override
     public int getOrder() {
         return -100; // High priority
     }
 
-
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                "Access Denied! " + message
+        // Simple error response without using ErrorResponse class
+        String errorJson = String.format(
+            "{\"timestamp\":\"%s\",\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Access Denied! %s\"}",
+            LocalDateTime.now(),
+            message
         );
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule()); // <--- Register the JavaTimeModule, otherwise Objectmapper can not parse the LocalDateTime
-
-        byte[] responseBytes;
-        try {
-            responseBytes = objectMapper.writeValueAsBytes(errorResponse);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            responseBytes = ("{\"timestamp\":\"" + LocalDateTime.now() +
-                    "\",\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Access Denied!\"}").getBytes(StandardCharsets.UTF_8);
-        }
-
+        byte[] responseBytes = errorJson.getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(responseBytes);
         return exchange.getResponse().writeWith(Mono.just(buffer));
     }
-
 } 
